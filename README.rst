@@ -7,6 +7,11 @@ provide their own set of hyper-parameter values, or in *hyper-parameter optimiza
 hyper-parameter values from set of user defined values. PyKEEN can also be run without having experience in programing
 by using its interactive command line interface that can be started with the command *pykeen* from a terminal.
 
+
+News
+----
+We are developing a new `package <https://github.com/SmartDataAnalytics/POEM>`_ for training and evaluating multimodal KGE models which will be later integrated into PyKEEN.
+
 Share Your Experimental Artifacts
 ---------------------------------
 You can share you trained KGE models along the other experimental artifacts through the `KEEN Model Zoo <https://github.com/SmartDataAnalytics/KEEN-Model-Zoo>`_.
@@ -87,7 +92,7 @@ contained in the directory:
 * relations_to_embeddings.json
 * trained_model.pkl
 
-These files are created automatically created after model is trained (and evaluated) and exported in your
+These files are automatically created after model is trained (and evaluated) and exported in your
 specified output directory.
 
 The value for the argument **-d** is the directory containing the data for which inference should be applied, and it
@@ -97,7 +102,7 @@ needs to contain following files:
 * relations.tsv
 
 where *entities.tsv* contains all entities of interest, and relations.tsv all relations. Both files should contain
-should contain a single column containing all the entities/relations. Based on these files, PyKEEN will create all
+a single column containing all the entities/relations. Based on these files, PyKEEN will create all
 triple permutations, and computes the predictions for them, and saves them in data directory
 in *predictions.tsv*.
 Note: the model- and the data-directory can be the same directory as long as all required files are provided.

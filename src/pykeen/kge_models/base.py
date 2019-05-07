@@ -5,6 +5,7 @@
 from dataclasses import dataclass
 from typing import Dict, Optional, Union
 
+import numpy as np
 import torch
 from torch import nn
 
@@ -90,6 +91,13 @@ class BaseModule(nn.Module):
 
     def _get_entity_embeddings(self, entities):
         return self.entity_embeddings(entities).view(-1, self.embedding_dim)
+
+    def _compute_loss(self, positive_scores: torch.Tensor, negative_scores: torch.Tensor) -> torch.Tensor:
+        y = np.repeat([-1], repeats=positive_scores.shape[0])
+        y = torch.tensor(y, dtype=torch.float, device=self.device)
+
+        loss = self.criterion(positive_scores, negative_scores, y)
+        return loss
 
 
 def slice_triples(triples):
