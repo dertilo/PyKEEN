@@ -13,10 +13,7 @@ from torch.nn.init import xavier_normal_
 from pykeen.constants import RELATION_EMBEDDING_DIM, SCORING_FUNCTION_NORM, TRANS_D_NAME
 from pykeen.kge_models.base import BaseModule, slice_triples
 
-__all__ = [
-    'TransD',
-    'TransDConfig',
-]
+__all__ = ["TransD", "TransDConfig"]
 
 
 @dataclass
@@ -25,7 +22,7 @@ class TransDConfig:
     scoring_function_norm: str
 
     @classmethod
-    def from_dict(cls, config: Dict) -> 'TransDConfig':
+    def from_dict(cls, config: Dict) -> "TransDConfig":
         """Generate an instance from a dictionary."""
         return cls(
             relation_embedding_dim=config[RELATION_EMBEDDING_DIM],
@@ -49,7 +46,10 @@ class TransD(BaseModule):
     model_name = TRANS_D_NAME
     margin_ranking_loss_size_average: bool = True
     entity_embedding_max_norm = 1
-    hyper_params = BaseModule.hyper_params + [RELATION_EMBEDDING_DIM, SCORING_FUNCTION_NORM]
+    hyper_params = BaseModule.hyper_params + [
+        RELATION_EMBEDDING_DIM,
+        SCORING_FUNCTION_NORM,
+    ]
 
     def __init__(self, config: Dict) -> None:
         super().__init__(config)
@@ -59,9 +59,13 @@ class TransD(BaseModule):
         self.relation_embedding_dim = config.relation_embedding_dim
 
         # A simple lookup table that stores embeddings of a fixed dictionary and size
-        self.relation_embeddings = nn.Embedding(self.num_relations, self.relation_embedding_dim, max_norm=1)
+        self.relation_embeddings = nn.Embedding(
+            self.num_relations, self.relation_embedding_dim, max_norm=1
+        )
         self.entity_projections = nn.Embedding(self.num_entities, self.embedding_dim)
-        self.relation_projections = nn.Embedding(self.num_relations, self.relation_embedding_dim)
+        self.relation_projections = nn.Embedding(
+            self.num_relations, self.relation_embedding_dim
+        )
 
         self.scoring_fct_norm = config.scoring_function_norm
 
@@ -81,7 +85,9 @@ class TransD(BaseModule):
     def forward(self, positives, negatives):
         positive_scores = self._score_triples(positives)
         negative_scores = self._score_triples(negatives)
-        loss = self._compute_loss(positive_scores=positive_scores, negative_scores=negative_scores)
+        loss = self._compute_loss(
+            positive_scores=positive_scores, negative_scores=negative_scores
+        )
         return loss
 
     def _score_triples(self, triples):
@@ -98,7 +104,9 @@ class TransD(BaseModule):
         proj_heads = self._project_entities(h_embs, h_proj_vec_embs, r_projs_embs)
         proj_tails = self._project_entities(t_embs, t_proj_vec_embs, r_projs_embs)
 
-        scores = self._compute_scores(h_embs=proj_heads, r_embs=r_embs, t_embs=proj_tails)
+        scores = self._compute_scores(
+            h_embs=proj_heads, r_embs=r_embs, t_embs=proj_tails
+        )
         return scores
 
     def _compute_scores(self, h_embs, r_embs, t_embs):
@@ -112,7 +120,9 @@ class TransD(BaseModule):
         relation_projections = relation_projections.unsqueeze(-1)
         entity_proj_vecs = entity_proj_vecs.unsqueeze(-1).permute([0, 2, 1])
         transfer_matrices = torch.matmul(relation_projections, entity_proj_vecs)
-        projected_entity_embs = torch.einsum('nmk,nk->nm', [transfer_matrices, entity_embs])
+        projected_entity_embs = torch.einsum(
+            "nmk,nk->nm", [transfer_matrices, entity_embs]
+        )
         return projected_entity_embs
 
     def _get_entity_projections(self, entities):
@@ -122,4 +132,6 @@ class TransD(BaseModule):
         return self.relation_embeddings(relations).view(-1, self.relation_embedding_dim)
 
     def _get_relation_projections(self, relations):
-        return self.relation_projections(relations).view(-1, self.relation_embedding_dim)
+        return self.relation_projections(relations).view(
+            -1, self.relation_embedding_dim
+        )

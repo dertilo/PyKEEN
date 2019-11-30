@@ -11,7 +11,7 @@ from torch import nn
 from pykeen.constants import ERMLP_NAME
 from pykeen.kge_models.base import BaseModule, slice_triples
 
-__all__ = ['ERMLP']
+__all__ = ["ERMLP"]
 
 
 class ERMLP(BaseModule):
@@ -50,17 +50,23 @@ class ERMLP(BaseModule):
     def forward(self, positives, negatives):
         positive_scores = self._score_triples(positives)
         negative_scores = self._score_triples(negatives)
-        loss = self._compute_loss(positive_scores=positive_scores, negative_scores=negative_scores)
+        loss = self._compute_loss(
+            positive_scores=positive_scores, negative_scores=negative_scores
+        )
         return loss
 
     def _score_triples(self, triples):
-        head_embeddings, relation_embeddings, tail_embeddings = self._get_triple_embeddings(triples)
-        scores = self._compute_scores(head_embeddings, relation_embeddings, tail_embeddings)
+        head_embeddings, relation_embeddings, tail_embeddings = self._get_triple_embeddings(
+            triples
+        )
+        scores = self._compute_scores(
+            head_embeddings, relation_embeddings, tail_embeddings
+        )
         return scores
 
     def _compute_scores(self, head_embeddings, relation_embeddings, tail_embeddings):
         x_s = torch.cat([head_embeddings, relation_embeddings, tail_embeddings], 1)
-        scores = - self.mlp(x_s)
+        scores = -self.mlp(x_s)
         return scores
 
     def _get_triple_embeddings(self, triples):

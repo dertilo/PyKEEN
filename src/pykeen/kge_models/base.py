@@ -10,14 +10,16 @@ import torch
 from torch import nn
 
 from pykeen.constants import (
-    EMBEDDING_DIM, GPU, LEARNING_RATE, MARGIN_LOSS, NUM_ENTITIES, NUM_RELATIONS, PREFERRED_DEVICE,
+    EMBEDDING_DIM,
+    GPU,
+    LEARNING_RATE,
+    MARGIN_LOSS,
+    NUM_ENTITIES,
+    NUM_RELATIONS,
+    PREFERRED_DEVICE,
 )
 
-__all__ = [
-    'BaseModule',
-    'BaseConfig',
-    'slice_triples',
-]
+__all__ = ["BaseModule", "BaseConfig", "slice_triples"]
 
 
 @dataclass
@@ -32,10 +34,12 @@ class BaseConfig:
 
     def get_device(self):
         """Get the Torch device to use."""
-        return torch.device('cuda:0' if torch.cuda.is_available() and self.try_gpu else 'cpu')
+        return torch.device(
+            "cuda:0" if torch.cuda.is_available() and self.try_gpu else "cpu"
+        )
 
     @classmethod
-    def from_dict(cls, config: Dict) -> 'BaseConfig':
+    def from_dict(cls, config: Dict) -> "BaseConfig":
         """Generate an instance from a dictionary."""
         return cls(
             try_gpu=(config.get(PREFERRED_DEVICE) == GPU),
@@ -67,7 +71,7 @@ class BaseModule(nn.Module):
         self.margin_loss = config.margin_loss
         self.criterion = nn.MarginRankingLoss(
             margin=self.margin_loss,
-            reduction='mean' if self.margin_ranking_loss_size_average else 'sum'
+            reduction="mean" if self.margin_ranking_loss_size_average else "sum",
         )
 
         # Entity dimensions
@@ -86,13 +90,15 @@ class BaseModule(nn.Module):
         )
 
     def __init_subclass__(cls, **kwargs):  # noqa: D105
-        if not getattr(cls, 'model_name', None):
-            raise TypeError('missing model_name class attribute')
+        if not getattr(cls, "model_name", None):
+            raise TypeError("missing model_name class attribute")
 
     def _get_entity_embeddings(self, entities):
         return self.entity_embeddings(entities).view(-1, self.embedding_dim)
 
-    def _compute_loss(self, positive_scores: torch.Tensor, negative_scores: torch.Tensor) -> torch.Tensor:
+    def _compute_loss(
+        self, positive_scores: torch.Tensor, negative_scores: torch.Tensor
+    ) -> torch.Tensor:
         y = np.repeat([-1], repeats=positive_scores.shape[0])
         y = torch.tensor(y, dtype=torch.float, device=self.device)
 

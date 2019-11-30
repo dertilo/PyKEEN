@@ -12,7 +12,7 @@ from torch.nn.init import xavier_normal_
 from pykeen.constants import DISTMULT_NAME
 from pykeen.kge_models.base import BaseModule, slice_triples
 
-__all__ = ['DistMult']
+__all__ = ["DistMult"]
 
 
 class DistMult(BaseModule):
@@ -52,16 +52,24 @@ class DistMult(BaseModule):
     def forward(self, positives, negatives):
         positive_scores = self._score_triples(positives)
         negative_scores = self._score_triples(negatives)
-        loss = self._compute_loss(positive_scores=positive_scores, negative_scores=negative_scores)
+        loss = self._compute_loss(
+            positive_scores=positive_scores, negative_scores=negative_scores
+        )
         return loss
 
     def _score_triples(self, triples):
-        head_embeddings, relation_embeddings, tail_embeddings = self._get_triple_embeddings(triples)
-        return self._compute_scores(head_embeddings, relation_embeddings, tail_embeddings)
+        head_embeddings, relation_embeddings, tail_embeddings = self._get_triple_embeddings(
+            triples
+        )
+        return self._compute_scores(
+            head_embeddings, relation_embeddings, tail_embeddings
+        )
 
     @staticmethod
     def _compute_scores(head_embeddings, relation_embeddings, tail_embeddings):
-        scores = - torch.sum(head_embeddings * relation_embeddings * tail_embeddings, dim=1)
+        scores = -torch.sum(
+            head_embeddings * relation_embeddings * tail_embeddings, dim=1
+        )
         return scores
 
     def _get_triple_embeddings(self, triples):
@@ -69,7 +77,7 @@ class DistMult(BaseModule):
         return (
             self._get_entity_embeddings(heads),
             self._get_relation_embeddings(relations),
-            self._get_entity_embeddings(tails)
+            self._get_entity_embeddings(tails),
         )
 
     def _get_relation_embeddings(self, relations):

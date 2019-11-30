@@ -11,12 +11,26 @@ from torch.nn import Parameter, functional as F
 from torch.nn.init import xavier_normal
 
 from pykeen.constants import (
-    CONV_E_FEATURE_MAP_DROPOUT, CONV_E_HEIGHT, CONV_E_INPUT_CHANNELS, CONV_E_INPUT_DROPOUT, CONV_E_KERNEL_HEIGHT,
-    CONV_E_KERNEL_WIDTH, CONV_E_NAME, CONV_E_OUTPUT_CHANNELS, CONV_E_OUTPUT_DROPOUT, CONV_E_WIDTH, EMBEDDING_DIM,
-    NUM_ENTITIES, NUM_RELATIONS,
-    MARGIN_LOSS, LEARNING_RATE, PREFERRED_DEVICE, GPU)
+    CONV_E_FEATURE_MAP_DROPOUT,
+    CONV_E_HEIGHT,
+    CONV_E_INPUT_CHANNELS,
+    CONV_E_INPUT_DROPOUT,
+    CONV_E_KERNEL_HEIGHT,
+    CONV_E_KERNEL_WIDTH,
+    CONV_E_NAME,
+    CONV_E_OUTPUT_CHANNELS,
+    CONV_E_OUTPUT_DROPOUT,
+    CONV_E_WIDTH,
+    EMBEDDING_DIM,
+    NUM_ENTITIES,
+    NUM_RELATIONS,
+    MARGIN_LOSS,
+    LEARNING_RATE,
+    PREFERRED_DEVICE,
+    GPU,
+)
 
-__all__ = ['ConvE']
+__all__ = ["ConvE"]
 
 
 class ConvE(nn.Module):
@@ -29,16 +43,29 @@ class ConvE(nn.Module):
     """
 
     model_name = CONV_E_NAME
-    hyper_params = [EMBEDDING_DIM, CONV_E_INPUT_CHANNELS, CONV_E_OUTPUT_CHANNELS, CONV_E_HEIGHT, CONV_E_WIDTH,
-                    CONV_E_KERNEL_HEIGHT, CONV_E_KERNEL_WIDTH, CONV_E_INPUT_DROPOUT, CONV_E_FEATURE_MAP_DROPOUT,
-                    CONV_E_OUTPUT_DROPOUT, MARGIN_LOSS, LEARNING_RATE]
+    hyper_params = [
+        EMBEDDING_DIM,
+        CONV_E_INPUT_CHANNELS,
+        CONV_E_OUTPUT_CHANNELS,
+        CONV_E_HEIGHT,
+        CONV_E_WIDTH,
+        CONV_E_KERNEL_HEIGHT,
+        CONV_E_KERNEL_WIDTH,
+        CONV_E_INPUT_DROPOUT,
+        CONV_E_FEATURE_MAP_DROPOUT,
+        CONV_E_OUTPUT_DROPOUT,
+        MARGIN_LOSS,
+        LEARNING_RATE,
+    ]
 
     def __init__(self, config: Dict) -> None:
         super().__init__()
         self.try_gpu = config.get(PREFERRED_DEVICE) == GPU
 
         # Device selection
-        self.device = torch.device('cuda:0' if torch.cuda.is_available() and self.try_gpu else 'cpu')
+        self.device = torch.device(
+            "cuda:0" if torch.cuda.is_available() and self.try_gpu else "cpu"
+        )
 
         # Entity dimensions
         self.num_entities = config[NUM_ENTITIES]
@@ -82,10 +109,12 @@ class ConvE(nn.Module):
         # num_features – C from an expected input of size (N,C,H,W)
         self.bn1 = torch.nn.BatchNorm2d(num_out_channels)
         self.bn2 = torch.nn.BatchNorm1d(self.embedding_dim)
-        self.register_parameter('b', Parameter(torch.zeros(self.num_entities)))
-        num_in_features = num_out_channels * \
-                          (2 * self.img_height - kernel_height + 1) * \
-                          (self.img_width - kernel_width + 1)
+        self.register_parameter("b", Parameter(torch.zeros(self.num_entities)))
+        num_in_features = (
+            num_out_channels
+            * (2 * self.img_height - kernel_height + 1)
+            * (self.img_width - kernel_width + 1)
+        )
         self.fc = torch.nn.Linear(num_in_features, self.embedding_dim)
 
     def init(self):  # FIXME is this ever called?
@@ -99,8 +128,12 @@ class ConvE(nn.Module):
         relation_batch = triples[:, 1:2]
         object_batch = triples[:, 2:3].view(-1)
 
-        subject_batch_embedded = self.entity_embeddings(subject_batch).view(-1, 1, self.img_height, self.img_width)
-        relation_batch_embedded = self.relation_embeddings(relation_batch).view(-1, 1, self.img_height, self.img_width)
+        subject_batch_embedded = self.entity_embeddings(subject_batch).view(
+            -1, 1, self.img_height, self.img_width
+        )
+        relation_batch_embedded = self.relation_embeddings(relation_batch).view(
+            -1, 1, self.img_height, self.img_width
+        )
         candidate_object_emebddings = self.entity_embeddings(object_batch)
 
         # batch_size, num_input_channels, 2*height, width
@@ -142,8 +175,12 @@ class ConvE(nn.Module):
         tails = batch[:, 2:3]
 
         # batch_size, num_input_channels, width, height
-        heads_embs = self.entity_embeddings(heads).view(-1, 1, self.img_height, self.img_width)
-        relation_embs = self.relation_embeddings(relations).view(-1, 1, self.img_height, self.img_width)
+        heads_embs = self.entity_embeddings(heads).view(
+            -1, 1, self.img_height, self.img_width
+        )
+        relation_embs = self.relation_embeddings(relations).view(
+            -1, 1, self.img_height, self.img_width
+        )
         tails_embs = self.entity_embeddings(tails).view(-1, self.embedding_dim)
 
         # batch_size, num_input_channels, 2*height, width

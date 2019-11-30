@@ -11,13 +11,14 @@ import torch
 import torch.autograd
 from torch import nn
 
-from pykeen.constants import NORM_FOR_NORMALIZATION_OF_ENTITIES, SCORING_FUNCTION_NORM, TRANS_E_NAME
+from pykeen.constants import (
+    NORM_FOR_NORMALIZATION_OF_ENTITIES,
+    SCORING_FUNCTION_NORM,
+    TRANS_E_NAME,
+)
 from pykeen.kge_models.base import BaseModule, slice_triples
 
-__all__ = [
-    'TransE',
-    'TransEConfig',
-]
+__all__ = ["TransE", "TransEConfig"]
 
 log = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ class TransEConfig:
     scoring_function_norm: str
 
     @classmethod
-    def from_dict(cls, config: Dict) -> 'TransEConfig':
+    def from_dict(cls, config: Dict) -> "TransEConfig":
         """Generate an instance from a dictionary."""
         return cls(
             lp_norm=config[NORM_FOR_NORMALIZATION_OF_ENTITIES],
@@ -52,7 +53,10 @@ class TransE(BaseModule):
 
     model_name = TRANS_E_NAME
     margin_ranking_loss_size_average: bool = True
-    hyper_params = BaseModule.hyper_params + [SCORING_FUNCTION_NORM, NORM_FOR_NORMALIZATION_OF_ENTITIES]
+    hyper_params = BaseModule.hyper_params + [
+        SCORING_FUNCTION_NORM,
+        NORM_FOR_NORMALIZATION_OF_ENTITIES,
+    ]
 
     def __init__(self, config: Dict) -> None:
         super().__init__(config)
@@ -80,7 +84,8 @@ class TransE(BaseModule):
 
         norms = torch.norm(self.relation_embeddings.weight, p=2, dim=1).data
         self.relation_embeddings.weight.data = self.relation_embeddings.weight.data.div(
-            norms.view(self.num_relations, 1).expand_as(self.relation_embeddings.weight))
+            norms.view(self.num_relations, 1).expand_as(self.relation_embeddings.weight)
+        )
 
     def predict(self, triples):
         scores = self._score_triples(triples)
@@ -88,18 +93,27 @@ class TransE(BaseModule):
 
     def forward(self, batch_positives, batch_negatives):
         # Normalize embeddings of entities
-        norms = torch.norm(self.entity_embeddings.weight, p=self.l_p_norm_entities, dim=1).data
+        norms = torch.norm(
+            self.entity_embeddings.weight, p=self.l_p_norm_entities, dim=1
+        ).data
         self.entity_embeddings.weight.data = self.entity_embeddings.weight.data.div(
-            norms.view(self.num_entities, 1).expand_as(self.entity_embeddings.weight))
+            norms.view(self.num_entities, 1).expand_as(self.entity_embeddings.weight)
+        )
 
         positive_scores = self._score_triples(batch_positives)
         negative_scores = self._score_triples(batch_negatives)
-        loss = self._compute_loss(positive_scores=positive_scores, negative_scores=negative_scores)
+        loss = self._compute_loss(
+            positive_scores=positive_scores, negative_scores=negative_scores
+        )
         return loss
 
     def _score_triples(self, triples):
-        head_embeddings, relation_embeddings, tail_embeddings = self._get_triple_embeddings(triples)
-        scores = self._compute_scores(head_embeddings, relation_embeddings, tail_embeddings)
+        head_embeddings, relation_embeddings, tail_embeddings = self._get_triple_embeddings(
+            triples
+        )
+        scores = self._compute_scores(
+            head_embeddings, relation_embeddings, tail_embeddings
+        )
         return scores
 
     def _compute_scores(self, head_embeddings, relation_embeddings, tail_embeddings):
